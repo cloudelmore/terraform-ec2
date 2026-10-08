@@ -1,26 +1,16 @@
-
 # main.tf
-
-data "aws_ssm_parameter" "al2023" {
-  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
-}
-
 
 # Specify the provider (AWS)
 provider "aws" {
-  region = "us-east-1"  # Replace with your desired region
+  region = "us-east-1"
 }
 
-# Create an EC2 instance
-resource "aws_instance" "Week_5_EC2" {
- ami = data.aws_ssm_parameter.al2023.value
-  instance_type = "t2.small"
-
-  tags = {
-    Name = "Week 5 Terraform-Example-Instance"
-  }
+# Create an EC2 instance using the reusable module
+module "ec2" {
+  source        = "./modules/ec2"
+  instance_type = "t2.micro"
+  instance_name = "Week 5 Terraform-Module-Instance"
 }
-
 
 # Create an S3 bucket
 resource "aws_s3_bucket" "my_bucket" {
@@ -28,5 +18,15 @@ resource "aws_s3_bucket" "my_bucket" {
 
   tags = {
     Name        = "Week_5_Bucket"
-    Environment = "Dev"}
+    Environment = "Dev"
+  }
+}
+
+# Show the module's outputs after apply
+output "ec2_instance_id" {
+  value = module.ec2.instance_id
+}
+
+output "ec2_public_ip" {
+  value = module.ec2.public_ip
 }
